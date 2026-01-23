@@ -33,4 +33,17 @@ public class DailyCheckinController {
 
         return ResponseEntity.ok(saved);
     }
+
+    @GetMapping("/calendar")
+    public ResponseEntity<?> getCheckinCalendar(
+            @RequestParam(defaultValue = "30") int days,
+            Principal principal
+    ) {
+        String email = principal.getName();
+
+        Long userId = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getId();
+        return ResponseEntity.ok(checkinService.getCalendar(userId, days));
+    }
 }

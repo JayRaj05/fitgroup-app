@@ -1,8 +1,10 @@
 package com.fitgroup.backend.checkin.service;
 
 import com.fitgroup.backend.badges.engine.BadgeRuleEngine;
+import com.fitgroup.backend.checkin.dto.CheckinCalendarDayResponse;
 import com.fitgroup.backend.checkin.dto.DailyCheckinRequest;
 import com.fitgroup.backend.checkin.entity.DailyCheckin;
+import com.fitgroup.backend.checkin.repository.DailyCheckinAggregate;
 import com.fitgroup.backend.checkin.repository.DailyCheckinRepository;
 import com.fitgroup.backend.challenge.entity.Challenge;
 import com.fitgroup.backend.challenge.entity.ChallengeParticipant;
@@ -14,6 +16,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -120,5 +126,46 @@ public class DailyCheckinService {
             default:
                 return 0;
         }
+    }
+
+
+    public List<CheckinCalendarDayResponse> getCalendar(Long userId, int days) {
+
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = today.minusDays(days - 1);
+
+        List<DailyCheckinAggregate> aggregates =
+                checkinRepo.findCalendarData(userId, startDate);
+
+        Map<LocalDate, DailyCheckinAggregate> map = aggregates.stream()
+                .collect(Collectors.toMap(
+                        DailyCheckinAggregate::getCheckinDate,
+                        a -> a
+                ));
+
+        List<CheckinCalendarDayResponse> result = new ArrayList<>();
+
+        for (int i = 0; i < days; i++) {
+            LocalDate date = startDate.plusDays(i);
+
+            if (map.containsKey(date)) {
+                DailyCheckinAggregate a = map.get(date);
+                result.add(CheckinCalendarDayResponse.builder()
+                        .date(date)
+                        .checkedIn(true)
+                        .totalPoints(a.getTotalPoints())
+                        .totalValue(a.getTotalValue())
+                        .build());
+            } else {
+                result.add(CheckinCalendarDayResponse.builder()
+                        .date(date)
+                        .checkedIn(false)
+                        .totalPoints(0)
+                        .totalValue(0)
+                        .build());
+            }
+        }
+
+        return result;
     }
 }
