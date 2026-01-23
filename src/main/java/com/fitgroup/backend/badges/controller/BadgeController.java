@@ -29,4 +29,9 @@ public class BadgeController {
         Long userId = getUserId(principal);
         return ResponseEntity.ok(badgeService.getUserBadgeDetails(userId));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllBadges() {
+        return ResponseEntity.ok(badgeService.getAllBadges());
+    }
 }

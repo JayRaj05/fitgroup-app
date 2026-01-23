@@ -134,6 +134,17 @@ public class ChallengeController {
         return ResponseEntity.ok("Challenge completed and badges awarded.");
     }
 
+    @GetMapping("/{challengeId}/progress")
+    public ResponseEntity<?> getChallengeProgress(
+            @PathVariable Long challengeId,
+            Principal principal
+    ) {
+        Long userId = getUserId(principal);
+        return ResponseEntity.ok(
+                challengeService.getChallengeProgress(challengeId, userId)
+        );
+    }
+
 
 
 }

@@ -2,6 +2,7 @@ package com.fitgroup.backend.challenge.service;
 
 import com.fitgroup.backend.badges.engine.BadgeRuleEngine;
 import com.fitgroup.backend.challenge.dto.CreateChallengeRequest;
+import com.fitgroup.backend.challenge.dto.DailyProgressResponse;
 import com.fitgroup.backend.challenge.dto.LeaderboardEntry;
 import com.fitgroup.backend.challenge.dto.MyChallengeResponse;
 import com.fitgroup.backend.challenge.entity.Challenge;
@@ -343,6 +344,30 @@ public class ChallengeService {
 
         // Step 3: award top performer badge
         awardTopPerformerBadge(challengeId);
+    }
+
+    public List<DailyProgressResponse> getChallengeProgress(Long challengeId, Long userId) {
+
+        // User must be participant
+        boolean isParticipant =
+                participantRepository.existsByChallengeIdAndUserId(challengeId, userId);
+
+        if (!isParticipant) {
+            throw new RuntimeException("User not part of this challenge");
+        }
+
+        //  Fetch aggregated daily progress
+        List<Object[]> rows =
+                dailyCheckinRepository.getDailyProgress(challengeId, userId);
+
+        //  Map to DTO
+        return rows.stream().map(row ->
+                new DailyProgressResponse(
+                        (LocalDate) row[0],
+                        ((Number) row[1]).intValue(),
+                        ((Number) row[2]).intValue()
+                )
+        ).toList();
     }
 }
 
