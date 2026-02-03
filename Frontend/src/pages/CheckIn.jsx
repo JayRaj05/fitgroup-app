@@ -2,11 +2,11 @@ import "./CheckIn.css";
 import Navbar from "../components/Navbar";
 import { useState, useEffect } from "react";
 import api from "../services/api";
-import { useNavigate, useLocation } from "react-router-dom"; // ✅ Import useLocation
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function CheckIn() {
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ Access state passed from ChallengeDetails
+  const location = useLocation(); 
   
   // 1. Check if we are checking in for a specific challenge
   const challengeData = location.state || {}; 
@@ -52,12 +52,19 @@ export default function CheckIn() {
     e.preventDefault();
     setLoading(true);
 
+    // ✅ VALIDATION: Check if fields are empty or invalid
+    // We use formData.distance and formData.time because that is where your state is stored
+    if (!formData.distance || !formData.time || parseFloat(formData.distance) <= 0 || parseInt(formData.time) <= 0) {
+      alert("Please enter a valid Distance and Time before checking in!");
+      setLoading(false);
+      return; // ❌ STOP HERE. Do not send request.
+    }
+
     try {
       const response = await api.post("/daily-checkins", {
-        // ✅ INCLUDE CHALLENGE ID IF PRESENT
         challengeId: challengeId || null, 
-        distance: parseFloat(formData.distance) || 0,
-        time: parseInt(formData.time) || 0,
+        distance: parseFloat(formData.distance),
+        time: parseInt(formData.time),
         notes: formData.notes
       });
 
@@ -66,9 +73,11 @@ export default function CheckIn() {
       fetchHistory(); 
       const statsRes = await api.get("/dashboard/stats");
       setStats({ streak: statsRes.data.streak });
+      
+      // Clear form
       setFormData({ distance: "", time: "", notes: "" });
 
-      // ✅ Redirect back to challenge if applicable
+      // Redirect back to challenge if applicable
       if (challengeId) {
           navigate(`/challenges/${challengeId}`);
       }
@@ -92,7 +101,6 @@ export default function CheckIn() {
         </div>
 
         <header className="checkin-header">
-          {/* ✅ Dynamic Header */}
           <h1>{challengeId ? `Log Activity for "${challengeName}"` : "Daily Check-In"}</h1>
           <p>Track your progress and keep your streak alive!</p>
         </header>
@@ -106,24 +114,43 @@ export default function CheckIn() {
 
             <div className="checkin-form-card">
               <h3>🏆 Log Your Activity</h3>
-              <label>Distance (km) *</label>
-              <input 
-                name="distance" type="number" placeholder="e.g. 5.0"
-                value={formData.distance} onChange={handleChange}
-              />
-              <label>Time (minutes) *</label>
-              <input 
-                name="time" type="number" placeholder="e.g. 30"
-                value={formData.time} onChange={handleChange}
-              />
-              <label>Notes (Optional)</label>
-              <textarea 
-                name="notes" placeholder="How did it feel?"
-                value={formData.notes} onChange={handleChange}
-              />
-              <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
-                {loading ? "Checking In..." : (challengeId ? "Submit Challenge Entry" : "Submit Check-In")}
-              </button>
+              <form onSubmit={handleSubmit}> {/* ✅ Wrapped in form tag for better browser handling */}
+                
+                <label>Distance (km) *</label>
+                <input 
+                  name="distance" 
+                  type="number" 
+                  placeholder="e.g. 5.0"
+                  value={formData.distance} 
+                  onChange={handleChange}
+                  required // 👈 Forces browser validation
+                  min="0.1" // 👈 Prevents zero or negative
+                  step="0.1" // 👈 Allows decimals
+                />
+                
+                <label>Time (minutes) *</label>
+                <input 
+                  name="time" 
+                  type="number" 
+                  placeholder="e.g. 30"
+                  value={formData.time} 
+                  onChange={handleChange}
+                  required // 👈 Forces browser validation
+                  min="1"  // 👈 Prevents zero or negative
+                />
+                
+                <label>Notes (Optional)</label>
+                <textarea 
+                  name="notes" 
+                  placeholder="How did it feel?"
+                  value={formData.notes} 
+                  onChange={handleChange}
+                />
+                
+                <button className="submit-btn" type="submit" disabled={loading}>
+                  {loading ? "Checking In..." : (challengeId ? "Submit Challenge Entry" : "Submit Check-In")}
+                </button>
+              </form>
             </div>
 
             <div className="history-card">

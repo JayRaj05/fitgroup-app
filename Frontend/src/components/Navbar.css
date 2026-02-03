@@ -4,8 +4,6 @@
   padding: 0 20px;
   background-color: var(--card-bg); 
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  
-  /* ✅ FIX: Changed to relative so it scrolls away naturally */
   box-sizing: border-box;
   height: 70px; 
   width: 100%;

@@ -27,7 +27,7 @@ function Register() {
       // Redirect to login after success
       navigate("/login"); 
     } catch (err) {
-      alert("Registration failed. Check console.");
+      alert("User already exists! Please try logging in.");
     }
   };
 
