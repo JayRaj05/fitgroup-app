@@ -264,8 +264,8 @@ Developed a full-stack gamified fitness platform using React, Spring Boot, and M
 ## 👨‍💻 Author
 
 **Tanmay Kaldate**  
-GitHub: https://github.com/tanmay-kaldate-26  
-LinkedIn: https://www.linkedin.com/in/tanmay-kaldate-044b3929a
+GitHub: https://github.com/JayRaj05  
+LinkedIn: https://www.linkedin.com/in/jayraj-gajul
 
 ---
 
